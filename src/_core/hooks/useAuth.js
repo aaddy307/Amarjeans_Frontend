@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 
 export function useAuth(options) {
-  const { redirectOnUnauthenticated = false, redirectPath = "/signin" } = options ?? {};
+  const { redirectOnUnauthenticated = false, redirectPath = "/admin/login" } = options ?? {};
   const utils = trpc.useUtils();
   const [location, setLocation] = useLocation();
 

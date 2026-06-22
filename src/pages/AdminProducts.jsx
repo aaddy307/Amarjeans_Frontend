@@ -9,7 +9,7 @@ import { Link } from "wouter";
 
 export default function AdminProducts() {
   const [, setLocation] = useLocation();
-  const { user, loading } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/signin" });
+  const { user, loading } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/admin/login" });
   
   const [view, setView] = useState("list"); // "list" or "form"
   const [isUploading, setIsUploading] = useState(false);
@@ -18,6 +18,9 @@ export default function AdminProducts() {
   const [title, setTitle] = useState("");
   const [handle, setHandle] = useState("");
   const [price, setPrice] = useState("");
+  const [isOnSale, setIsOnSale] = useState(false);
+  const [compareAtPrice, setCompareAtPrice] = useState("");
+  const [isTrending, setIsTrending] = useState(false);
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [imageFile, setImageFile] = useState(null);
@@ -91,6 +94,9 @@ export default function AdminProducts() {
     setTitle("");
     setHandle("");
     setPrice("");
+    setIsOnSale(false);
+    setCompareAtPrice("");
+    setIsTrending(false);
     setDescription("");
     setCategoryId("");
     setImageFile(null);
@@ -104,6 +110,9 @@ export default function AdminProducts() {
     setTitle(prod.title || "");
     setHandle(prod.handle || "");
     setPrice(prod.priceRange?.min?.amount?.toString() || "");
+    setIsOnSale((prod.compareAtPrice && prod.compareAtPrice > prod.priceRange?.min?.amount) ? true : false);
+    setCompareAtPrice(prod.compareAtPrice ? prod.compareAtPrice.toString() : "");
+    setIsTrending(prod.isTrending || false);
     setDescription(prod.description || "");
     // Find matching category by productType (name)
     const matchedCat = categories.find(c => c.name.toLowerCase() === (prod.productType || "").toLowerCase());
@@ -140,6 +149,11 @@ export default function AdminProducts() {
       return;
     }
 
+    if (isOnSale && parseFloat(compareAtPrice) <= parseFloat(price)) {
+      toast.error("The Original Price must be HIGHER than the Current Selling Price to put an item on sale!");
+      return;
+    }
+
     setIsUploading(true);
     let uploadedImageUrl = undefined;
 
@@ -168,6 +182,8 @@ export default function AdminProducts() {
         productId: editingProduct.id,
         title,
         price: parseFloat(price),
+        compareAtPrice: isOnSale && compareAtPrice ? parseFloat(compareAtPrice) : null,
+        isTrending,
         description,
         categoryId,
         imageUrl: uploadedImageUrl || existingImageUrl || "",
@@ -181,6 +197,8 @@ export default function AdminProducts() {
         title,
         handle,
         price: parseFloat(price),
+        compareAtPrice: isOnSale && compareAtPrice ? parseFloat(compareAtPrice) : null,
+        isTrending,
         description,
         categoryId,
         imageUrl: uploadedImageUrl,
@@ -286,7 +304,15 @@ export default function AdminProducts() {
                       </div>
                     </div>
                     <div className="md:col-span-4 flex flex-col">
-                      <span className="font-black uppercase tracking-tighter text-foreground text-lg line-clamp-1">{prod.title}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-black uppercase tracking-tighter text-foreground text-lg line-clamp-1">{prod.title}</span>
+                        {prod.compareAtPrice > prod.priceRange?.min?.amount && (
+                          <span className="bg-primary text-primary-foreground text-[8px] px-2 py-0.5 font-black uppercase tracking-widest">Sale</span>
+                        )}
+                        {prod.isTrending && (
+                          <span className="bg-foreground text-background text-[8px] px-2 py-0.5 font-black uppercase tracking-widest">Trending</span>
+                        )}
+                      </div>
                       <span className="text-xs text-muted-foreground font-bold">{prod.handle}</span>
                     </div>
                     <div className="md:col-span-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
@@ -294,6 +320,9 @@ export default function AdminProducts() {
                     </div>
                     <div className="md:col-span-2 text-foreground font-black text-lg">
                       ₹{prod.priceRange.min.amount}
+                      {prod.compareAtPrice > prod.priceRange.min.amount && (
+                        <span className="text-xs text-muted-foreground line-through ml-2">₹{prod.compareAtPrice}</span>
+                      )}
                     </div>
                     <div className="md:col-span-2 flex justify-end gap-2">
                       <button 
@@ -388,11 +417,50 @@ export default function AdminProducts() {
                     )}
 
                     <div>
-                      <label className="text-xs font-black uppercase tracking-widest text-foreground block mb-2">Price (₹)</label>
+                      <label className="text-xs font-black uppercase tracking-widest text-foreground block mb-2">Current Selling Price (₹)</label>
                       <input 
                         type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} required
                         className="w-full bg-muted/30 border border-border px-4 py-4 focus:outline-none focus:border-primary transition-colors font-black text-lg" 
                       />
+                    </div>
+
+                    <div className="flex items-center gap-4 border border-border p-4 bg-muted/10">
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="checkbox" 
+                          id="onSale" 
+                          checked={isOnSale} 
+                          onChange={(e) => setIsOnSale(e.target.checked)} 
+                          className="w-4 h-4 text-primary focus:ring-primary border-border bg-muted/30 cursor-pointer"
+                        />
+                        <label htmlFor="onSale" className="text-xs font-black uppercase tracking-widest text-foreground cursor-pointer">
+                          Product is on Sale
+                        </label>
+                      </div>
+                    </div>
+
+                    {isOnSale && (
+                      <div>
+                        <label className="text-xs font-black uppercase tracking-widest text-foreground block mb-2">Original Higher Price (Compare At) (₹)</label>
+                        <input 
+                          type="number" min="0" step="0.01" value={compareAtPrice} onChange={(e) => setCompareAtPrice(e.target.value)}
+                          className="w-full bg-muted/30 border border-border px-4 py-4 focus:outline-none focus:border-primary transition-colors font-black text-lg text-muted-foreground" 
+                          placeholder="Must be higher than selling price" required={isOnSale}
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        id="trending" 
+                        checked={isTrending} 
+                        onChange={(e) => setIsTrending(e.target.checked)} 
+                        className="w-4 h-4 text-primary focus:ring-primary border-border bg-muted/30"
+                      />
+                      <label htmlFor="trending" className="text-xs font-black uppercase tracking-widest text-foreground cursor-pointer">
+                        Mark as Trending Right Now
+                      </label>
                     </div>
 
                     <div>

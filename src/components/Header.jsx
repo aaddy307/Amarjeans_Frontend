@@ -20,7 +20,7 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useLocation();
 
-  const isAuthPage = ["/signin", "/register", "/forgot-password"].includes(location);
+  const isAuthPage = ["/admin/login", "/register", "/forgot-password"].includes(location);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -188,20 +188,7 @@ export default function Header() {
                   ))}
                 </div>
 
-                {categories.length > 0 && (
-                  <div className="p-6 border-b border-border">
-                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Categories</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      {categories.map((cat) => (
-                        <Link key={cat.id} href={`/products?cat=${cat.slug}`}>
-                          <span className="block text-sm font-bold uppercase tracking-wider text-foreground hover:text-primary">
-                            {cat.name}
-                          </span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  {/* Categories removed from here as per user request to only show them in the Products page hamburger menu on mobile */}
 
               </nav>
             </motion.div>

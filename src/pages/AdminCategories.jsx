@@ -9,7 +9,7 @@ import { Link } from "wouter";
 
 export default function AdminCategories() {
   const [, setLocation] = useLocation();
-  const { user, loading } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/signin" });
+  const { user, loading } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/admin/login" });
   
   const [view, setView] = useState("list"); // "list" or "form"
   const [isUploading, setIsUploading] = useState(false);

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 
 export default function AdminLogs() {
   const [, setLocation] = useLocation();
-  const { user, loading } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/signin" });
+  const { user, loading } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/admin/login" });
   
   const { data: logs = [], isLoading } = trpc.admin.getLogs.useQuery();
 

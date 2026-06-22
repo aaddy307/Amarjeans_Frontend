@@ -8,7 +8,7 @@ import { useState, useMemo } from "react";
 
 export default function AdminOrders() {
   const [, setLocation] = useLocation();
-  const { user, loading } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/signin" });
+  const { user, loading } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/admin/login" });
   
   const utils = trpc.useUtils();
   const { data: orders = [], isLoading } = trpc.admin.getOrders.useQuery();

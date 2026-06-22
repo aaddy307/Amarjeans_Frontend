@@ -31,12 +31,12 @@ function Router() {
       <Route path={"/product/:handle"} component={ProductDetail} />
       <Route path={"/cart"} component={Cart} />
       <Route path={"/admin"} component={AdminDashboard} />
+      <Route path={"/admin/login"} component={SignIn} />
       <Route path={"/admin/products"} component={AdminProducts} />
       <Route path={"/admin/categories"} component={AdminCategories} />
       <Route path={"/admin/orders"} component={AdminOrders} />
       <Route path={"/admin/logs"} component={AdminLogs} />
       <Route path={"/settings"} component={AdminSettings} />
-      <Route path={"/signin"} component={SignIn} />
       <Route path={"/contact"} component={Contact} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
@@ -50,8 +50,8 @@ import { useLocation } from "wouter";
 
 function Layout({ children }) {
   const [location] = useLocation();
-  const isAdminOrSettings = location.startsWith("/admin") || location === "/settings";
-  const isAuthPage = ["/signin"].includes(location);
+  const isAdminOrSettings = (location.startsWith("/admin") && location !== "/admin/login") || location === "/settings";
+  const isAuthPage = ["/admin/login"].includes(location);
   
   if (isAdminOrSettings) {
     return <AdminLayout>{children}</AdminLayout>;

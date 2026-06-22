@@ -11,8 +11,8 @@ export default function AdminLayout({ children }) {
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "admin")) {
-      if (location !== "/signin") {
-        setLocation("/signin");
+      if (location !== "/admin/login") {
+        setLocation("/admin/login");
       }
     }
   }, [user, loading, location, setLocation]);

@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 
 export default function AdminSettings() {
   const [, setLocation] = useLocation();
-  const { user, loading: authLoading } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/signin" });
+  const { user, loading: authLoading } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/admin/login" });
   
   const utils = trpc.useUtils();
   const { data: settings, isLoading } = trpc.admin.getSettings.useQuery();

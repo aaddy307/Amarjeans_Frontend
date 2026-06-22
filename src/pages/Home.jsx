@@ -22,7 +22,7 @@ function ProductCarousel({ title, tag, items }) {
         
         <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-8 -mx-4 px-4 lg:mx-0 lg:px-0 snap-x">
           {items.map((item, i) => (
-            <Link key={i} href="/products">
+            <Link key={i} href={item.handle ? `/product/${item.handle}` : "/products"}>
               <div className="w-[160px] min-w-[160px] md:w-[260px] md:min-w-[300px] group cursor-pointer snap-start relative">
                 <div className="relative aspect-3/4 bg-muted mb-2 md:mb-4 overflow-hidden">
                   <img src={item.img} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -45,7 +45,12 @@ function ProductCarousel({ title, tag, items }) {
                   <span className="text-[9px] md:text-[10px] font-bold text-muted-foreground ml-1">(128)</span>
                 </div>
                 <h3 className="font-bold text-foreground text-xs md:text-lg uppercase tracking-tight leading-tight mb-0.5 md:mb-1 group-hover:text-primary transition-colors line-clamp-1 truncate">{item.title}</h3>
-                <p className="text-muted-foreground text-xs md:text-sm font-bold">{item.price}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-foreground text-xs md:text-sm font-black">{item.price}</p>
+                  {item.compareAtPrice && (
+                    <p className="text-muted-foreground text-[10px] md:text-xs font-bold line-through">{item.compareAtPrice}</p>
+                  )}
+                </div>
               </div>
             </Link>
           ))}
@@ -56,24 +61,39 @@ function ProductCarousel({ title, tag, items }) {
 }
 
 export default function Home() {
-  const trendingItems = [
-    { title: "Essential Cotton Tee", price: "₹899", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=600", badge: "Best Seller" },
-    { title: "Utility Cargo Pants", price: "₹2499", img: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&q=80&w=600" },
-    { title: "Oversized Hoodie", price: "₹1899", img: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=600", badge: "New" },
-    { title: "Classic Denim Jacket", price: "₹3499", img: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&q=80&w=600" },
-    { title: "Summer Shorts", price: "₹799", img: "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&q=80&w=600", badge: "-20%" },
-  ];
-
-  const newArrivals = [
-    { title: "Athletic Tracksuit", price: "₹3999", img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=600", badge: "Just Dropped" },
-    { title: "Premium Sando", price: "₹499", img: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&q=80&w=600" },
-    { title: "Rain Coat Pro", price: "₹1599", img: "https://images.unsplash.com/photo-1504198458649-3128b932f49e?auto=format&fit=crop&q=80&w=600" },
-    { title: "Performance Socks 3-Pack", price: "₹399", img: "https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?auto=format&fit=crop&q=80&w=600" },
-    { title: "Woven Lungi", price: "₹599", img: "https://images.unsplash.com/photo-1620799140188-3b2a02fd9a77?auto=format&fit=crop&q=80&w=600" },
-  ];
-
   const { data: categories = [] } = trpc.commerce.categories.list.useQuery();
   const { data: recentReviews = [] } = trpc.commerce.reviews.listRecent.useQuery();
+  const { data: dbProducts = [] } = trpc.commerce.products.list.useQuery();
+  const trendingProducts = dbProducts.filter(p => p.isTrending);
+  const trendingDisplayProducts = trendingProducts;
+
+  const dynamicTrending = trendingDisplayProducts.map(p => {
+    const priceAmount = Number(p.priceRange.min.amount);
+    const isSale = p.compareAtPrice > priceAmount;
+    const discount = isSale ? Math.round(((p.compareAtPrice - priceAmount) / p.compareAtPrice) * 100) : 0;
+    return {
+      title: p.title,
+      price: `₹${p.priceRange.min.amount}`,
+      compareAtPrice: isSale ? `₹${p.compareAtPrice}` : null,
+      img: p.images?.[0]?.url || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=600",
+      badge: isSale ? `-${discount}%` : (p.isTrending ? "Trending" : "Best Seller"),
+      handle: p.handle
+    };
+  });
+
+  const dynamicNewArrivals = dbProducts.slice(-5).reverse().map(p => {
+    const priceAmount = Number(p.priceRange.min.amount);
+    const isSale = p.compareAtPrice > priceAmount;
+    const discount = isSale ? Math.round(((p.compareAtPrice - priceAmount) / p.compareAtPrice) * 100) : 0;
+    return {
+      title: p.title,
+      price: `₹${p.priceRange.min.amount}`,
+      compareAtPrice: isSale ? `₹${p.compareAtPrice}` : null,
+      img: p.images?.[0]?.url || "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=600",
+      badge: isSale ? `-${discount}%` : "Just Dropped",
+      handle: p.handle
+    };
+  });
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
@@ -127,7 +147,7 @@ export default function Home() {
       <section className="grid grid-cols-1 md:grid-cols-3 border-b border-border">
         {[
           { title: "Free Shipping", sub: "On orders over ₹1500", icon: <Truck className="w-8 h-8" /> },
-          { title: "30-Day Returns", sub: "No questions asked", icon: <RefreshCw className="w-8 h-8" /> },
+          { title: "7-Day Returns", sub: "No questions asked", icon: <RefreshCw className="w-8 h-8" /> },
           { title: "Secure Payment", sub: "100% safe checkout", icon: <Lock className="w-8 h-8" /> },
         ].map((promo, i) => (
           <div key={i} className="flex items-center gap-4 p-8 border-b md:border-b-0 md:border-r border-border last:border-0 bg-muted/20">
@@ -141,7 +161,13 @@ export default function Home() {
       </section>
 
       {/* Dense Product Carousels */}
-      <ProductCarousel title="Trending Right Now" tag="Hot Sellers" items={trendingItems} />
+      {dynamicTrending.length > 0 && (
+        <ProductCarousel 
+          title="Trending Right Now" 
+          tag="Hot Sellers"
+          items={dynamicTrending}
+        />
+      )}
       
       {/* Massive Ad Banner (Amazon style deal highlight) */}
       <section className="border-b border-border">
@@ -168,7 +194,7 @@ export default function Home() {
         </Link>
       </section>
 
-      <ProductCarousel title="Just Dropped" tag="New Arrivals" items={newArrivals} />
+      <ProductCarousel title="Just Dropped" tag="New Arrivals" items={dbProducts.length > 0 ? dynamicNewArrivals : []} />
 
       {/* Dynamic Category List */}
       <section className="py-12 border-b border-border bg-muted/10">
@@ -225,44 +251,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* Footer */}
-      <footer className="bg-foreground text-background pt-16 pb-8 border-t-16 border-primary">
-        <div className="max-w-[1440px] mx-auto px-4 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-            <div className="lg:col-span-2">
-              <h2 className="text-5xl font-black tracking-tighter mb-6 uppercase">AMAR <span className="text-primary">Jeans</span></h2>
-              <p className="text-muted-foreground max-w-sm text-sm font-bold uppercase tracking-widest leading-relaxed">
-                The Ultimate E-Commerce Destination. <br/>
-                High Quality. High Utility. No Compromises.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-background font-black uppercase tracking-widest mb-6 border-b border-muted-foreground pb-4">Categories</h3>
-              <ul className="space-y-3">
-                {categories.slice(0, 6).map(cat => (
-                  <li key={cat.id}>
-                    <Link href={`/products?cat=${cat.slug}`}>
-                      <span className="text-muted-foreground hover:text-primary transition-colors cursor-pointer text-sm font-bold uppercase tracking-wider">{cat.name}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-background font-black uppercase tracking-widest mb-6 border-b border-muted-foreground pb-4">Support</h3>
-              <ul className="space-y-3 text-muted-foreground text-sm font-bold uppercase tracking-wider">
-                <li>+91 9834557990</li>
-                <li>+91 8149987987</li>
-                <li className="hover:text-primary transition-colors cursor-pointer">contact@amarjeans.com</li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-muted-foreground pt-8 flex flex-col md:flex-row items-center justify-between text-muted-foreground text-xs font-bold uppercase tracking-widest">
-            <p>&copy; {new Date().getFullYear()} AMAR JEANS. All Rights Reserved.</p>
-            <p className="mt-4 md:mt-0">Mumbai, India</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

@@ -180,8 +180,16 @@ Pincode: ${pincode}`;
               <span className="text-muted-foreground text-sm font-bold uppercase tracking-widest">({reviews.length} Reviews)</span>
             </div>
 
-            <div className="text-4xl font-black text-foreground mb-8">
-              ₹{product.priceRange.min.amount}
+            <div className="text-4xl font-black text-foreground mb-8 flex items-center gap-4">
+              <span>₹{product.priceRange.min.amount}</span>
+              {product.compareAtPrice > Number(product.priceRange.min.amount) && (
+                <>
+                  <span className="text-2xl font-bold text-muted-foreground line-through">₹{product.compareAtPrice}</span>
+                  <span className="bg-primary text-primary-foreground text-sm px-3 py-1 font-black uppercase tracking-widest">
+                    Save {Math.round(((product.compareAtPrice - Number(product.priceRange.min.amount)) / product.compareAtPrice) * 100)}%
+                  </span>
+                </>
+              )}
             </div>
 
             <p className="text-muted-foreground text-sm md:text-base font-bold leading-relaxed mb-12">
@@ -218,7 +226,7 @@ Pincode: ${pincode}`;
             </motion.button>
             
             <div className="grid grid-cols-3 gap-4 border-t border-border pt-8 mt-8">
-              {["Free Shipping", "30 Day Returns", "Secure Checkout"].map(feature => (
+              {["Free Shipping", "7 Day Returns", "Secure Checkout"].map(feature => (
                 <div key={feature} className="text-center">
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{feature}</p>
                 </div>
@@ -301,22 +309,24 @@ Pincode: ${pincode}`;
                   <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-2">Be the first to share your thoughts!</p>
                 </div>
               ) : (
-                reviews.map(review => (
-                  <div key={review._id} className="bg-background border border-border p-8">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h4 className="font-bold uppercase tracking-widest text-foreground">{review.authorName || "Anonymous"}</h4>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{new Date(review.createdAt).toLocaleDateString()}</p>
+                <div className="max-h-[600px] overflow-y-auto pr-2 custom-scrollbar space-y-6">
+                  {reviews.map(review => (
+                    <div key={review._id} className="bg-background border border-border p-8">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h4 className="font-bold uppercase tracking-widest text-foreground">{review.authorName || "Anonymous"}</h4>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{new Date(review.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map(star => (
+                            <Star key={star} className={`w-4 h-4 ${star <= review.rating ? "text-primary fill-primary" : "text-muted-foreground"}`} />
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map(star => (
-                          <Star key={star} className={`w-4 h-4 ${star <= review.rating ? "text-primary fill-primary" : "text-muted-foreground"}`} />
-                        ))}
-                      </div>
+                      <p className="text-muted-foreground text-sm font-bold leading-relaxed">{review.comment}</p>
                     </div>
-                    <p className="text-muted-foreground text-sm font-bold leading-relaxed">{review.comment}</p>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </div>
         </div>
@@ -328,7 +338,7 @@ Pincode: ${pincode}`;
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+              className="fixed inset-0 z-100 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
             >
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}

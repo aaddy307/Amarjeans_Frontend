@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useCart } from "@/contexts/CartContext";
-import { ShoppingBag, Search, Filter, Star, ChevronDown, ChevronRight } from "lucide-react";
+import { ShoppingBag, Search, Filter, Star, ChevronDown, ChevronRight, Menu, X } from "lucide-react";
 import { Link, useLocation, useSearch } from "wouter";
 import { useState } from "react";
 
@@ -24,6 +24,9 @@ export default function Products() {
   const activeCategory = activeCategoryParam;
   const [activeRating, setActiveRating] = useState(0);
   const [sortBy, setSortBy] = useState("Recommended");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [mobileCatMenuOpen, setMobileCatMenuOpen] = useState(false);
+  const productsPerPage = 12;
 
   const filteredProducts = products.filter(p => {
     const searchLow = searchTerm.toLowerCase();
@@ -57,6 +60,12 @@ export default function Products() {
     }
   });
 
+  const totalPages = Math.ceil(sortedAndFilteredProducts.length / productsPerPage);
+  const paginatedProducts = sortedAndFilteredProducts.slice(
+    (currentPage - 1) * productsPerPage,
+    currentPage * productsPerPage
+  );
+
   const handleAdd = (e, variantId) => {
     e.preventDefault();
     addItem(variantId, 1);
@@ -68,14 +77,45 @@ export default function Products() {
       {/* Top Banner (Utility style) */}
       <div className="border-b border-border bg-muted/20">
         <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            <Link href="/"><span className="hover:text-foreground cursor-pointer transition-colors">Home</span></Link>
-            <ChevronRight className="w-3 h-3" />
-            <span className="text-foreground">{activeCategory === "all" ? "All Products" : activeCategory}</span>
+          <div className="flex items-center justify-between w-full md:w-auto">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              <Link href="/"><span className="hover:text-foreground cursor-pointer transition-colors">Home</span></Link>
+              <ChevronRight className="w-3 h-3" />
+              <span className="text-foreground">{activeCategory === "all" ? "All Products" : activeCategory}</span>
+            </div>
+            {/* Mobile Categories Toggle */}
+            <button 
+              className="md:hidden text-foreground hover:text-primary transition-colors"
+              onClick={() => setMobileCatMenuOpen(!mobileCatMenuOpen)}
+            >
+              {mobileCatMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
           <div className="text-sm font-bold text-foreground">
             {sortedAndFilteredProducts.length} <span className="text-muted-foreground">items found</span>
           </div>
+
+          {/* Mobile Categories Menu */}
+          <AnimatePresence>
+            {mobileCatMenuOpen && (
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }} 
+                animate={{ height: "auto", opacity: 1 }} 
+                exit={{ height: 0, opacity: 0 }}
+                className="md:hidden flex flex-col gap-4 pt-4 mt-2 border-t border-border overflow-hidden w-full"
+              >
+                <Link href={`/products?cat=all`} onClick={() => setMobileCatMenuOpen(false)}>
+                  <span className={`block text-xs font-bold uppercase tracking-widest ${activeCategory === 'all' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>All Products</span>
+                </Link>
+                {categories.map(cat => (
+                  <Link key={cat.id} href={`/products?cat=${cat.slug}`} onClick={() => setMobileCatMenuOpen(false)}>
+                    <span className={`block text-xs font-bold uppercase tracking-widest ${activeCategory === cat.slug ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>{cat.name}</span>
+                  </Link>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
         </div>
       </div>
 
@@ -127,7 +167,7 @@ export default function Products() {
               animate="visible"
               variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
             >
-              {sortedAndFilteredProducts.map((product) => (
+              {paginatedProducts.map((product) => (
                 <motion.div 
                   key={product.id} 
                   variants={cardVariants}
@@ -153,6 +193,11 @@ export default function Products() {
                         </div>
                         {/* Badges */}
                         <div className="absolute top-2 left-2 flex flex-col gap-2 z-10">
+                          {product.compareAtPrice > Number(product.priceRange.min.amount) && (
+                            <span className="bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest px-3 py-1.5 shadow-sm">
+                              -{Math.round(((product.compareAtPrice - Number(product.priceRange.min.amount)) / product.compareAtPrice) * 100)}%
+                            </span>
+                          )}
                           {product.tags.slice(0, 1).map(tag => (
                             <span key={tag} className="bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest px-3 py-1.5 shadow-sm">
                               {tag}
@@ -173,8 +218,11 @@ export default function Products() {
                         </div>
                         <h3 className="text-lg font-black text-foreground uppercase tracking-tight leading-tight mb-1 group-hover:text-primary transition-colors line-clamp-1">{product.title}</h3>
                         <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mb-2">{product.vendor}</p>
-                        <div className="mt-auto">
+                        <div className="mt-auto flex items-center gap-2">
                           <span className="text-xl font-black text-foreground">₹{product.priceRange.min.amount}</span>
+                          {product.compareAtPrice > Number(product.priceRange.min.amount) && (
+                            <span className="text-sm font-bold text-muted-foreground line-through">₹{product.compareAtPrice}</span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -182,6 +230,41 @@ export default function Products() {
                 </motion.div>
               ))}
             </motion.div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-16">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 border border-border text-foreground font-black uppercase tracking-widest text-xs disabled:opacity-50 hover:bg-muted transition-colors"
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-10 h-10 flex items-center justify-center border font-black text-sm transition-colors ${
+                      currentPage === i + 1 
+                        ? "bg-foreground text-background border-foreground" 
+                        : "bg-transparent text-foreground border-border hover:bg-muted"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 border border-border text-foreground font-black uppercase tracking-widest text-xs disabled:opacity-50 hover:bg-muted transition-colors"
+              >
+                Next
+              </button>
+            </div>
           )}
         </main>
       </div>
