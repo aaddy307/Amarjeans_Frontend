@@ -21,6 +21,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import AdminOrders from "./pages/AdminOrders";
 import AdminLogs from "./pages/AdminLogs";
 import AdminSettings from "./pages/AdminSettings";
+import AdminReviews from "./pages/AdminReviews";
 
 function Router() {
   return (
@@ -35,6 +36,7 @@ function Router() {
       <Route path={"/admin/products"} component={AdminProducts} />
       <Route path={"/admin/categories"} component={AdminCategories} />
       <Route path={"/admin/orders"} component={AdminOrders} />
+      <Route path={"/admin/reviews"} component={AdminReviews} />
       <Route path={"/admin/logs"} component={AdminLogs} />
       <Route path={"/settings"} component={AdminSettings} />
       <Route path={"/contact"} component={Contact} />

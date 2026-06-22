@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { BarChart3, Users, ShoppingBag, Activity, Settings, Shield, Tags, PackagePlus, X, LogOut, Menu } from "lucide-react";
+import { BarChart3, Users, ShoppingBag, Activity, Settings, Shield, Tags, PackagePlus, X, LogOut, Menu, MessageSquare } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function AdminLayout({ children }) {
@@ -22,6 +22,7 @@ export default function AdminLayout({ children }) {
     { href: "/admin/products", icon: PackagePlus, label: "Products" },
     { href: "/admin/categories", icon: Tags, label: "Categories" },
     { href: "/admin/orders", icon: ShoppingBag, label: "Orders" },
+    { href: "/admin/reviews", icon: MessageSquare, label: "Reviews" },
     { href: "/admin/logs", icon: Activity, label: "Logs" },
     { href: "/settings", icon: Settings, label: "Settings" },
   ];
