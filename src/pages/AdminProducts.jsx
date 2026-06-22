@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
-import { Shield, Plus, Trash2, ArrowLeft, Image as ImageIcon, Upload, X, Pencil, Wand2 } from "lucide-react";
+import { Shield, Plus, Trash2, ArrowLeft, Image as ImageIcon, Upload, X, Pencil, Wand2, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Link } from "wouter";
@@ -28,6 +28,28 @@ export default function AdminProducts() {
   const utils = trpc.useUtils();
   const { data: products = [], isLoading: isLoadingProducts } = trpc.commerce.products.list.useQuery();
   const { data: categories = [], isLoading: isLoadingCategories } = trpc.commerce.categories.list.useQuery();
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((prod) => {
+      const matchesSearch = prod.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            prod.handle.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = categoryFilter === "all" || prod.productType === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchTerm, categoryFilter]);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter]);
 
   const createMutation = trpc.admin.createProduct.useMutation({
     onSuccess: () => {
@@ -216,19 +238,45 @@ export default function AdminProducts() {
             <motion.div 
               key="list"
               initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-              className="bg-background border border-border overflow-hidden"
             >
-              <div className="grid-cols-12 gap-4 p-4 border-b border-border text-xs font-black uppercase tracking-widest text-muted-foreground bg-muted/20 hidden md:grid">
-                <div className="col-span-1">Img</div>
-                <div className="col-span-4">Product Info</div>
-                <div className="col-span-3">Category</div>
-                <div className="col-span-2">Price</div>
-                <div className="col-span-2 text-right">Actions</div>
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-background border border-border text-sm focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+                <div className="relative w-full sm:w-64">
+                  <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-background border border-border text-sm focus:outline-none focus:border-primary transition-colors cursor-pointer appearance-none"
+                  >
+                    <option value="all">All Categories</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              {products.length === 0 ? (
-                <div className="p-16 text-center text-muted-foreground font-bold uppercase tracking-widest">No products found. Add one above.</div>
-              ) : (
-                products.map(prod => (
+
+              <div className="bg-background border border-border overflow-hidden">
+                <div className="grid-cols-12 gap-4 p-4 border-b border-border text-xs font-black uppercase tracking-widest text-muted-foreground bg-muted/20 hidden md:grid">
+                  <div className="col-span-1">Img</div>
+                  <div className="col-span-4">Product Info</div>
+                  <div className="col-span-3">Category</div>
+                  <div className="col-span-2">Price</div>
+                  <div className="col-span-2 text-right">Actions</div>
+                </div>
+                {paginatedProducts.length === 0 ? (
+                  <div className="p-16 text-center text-muted-foreground font-bold uppercase tracking-widest">No products found.</div>
+                ) : (
+                  paginatedProducts.map(prod => (
                   <div key={prod.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border-b border-border items-center hover:bg-muted/10 transition-colors">
                     <div className="md:col-span-1 hidden md:block">
                       <div className="w-12 h-12 bg-muted border border-border overflow-hidden flex items-center justify-center">
@@ -267,6 +315,29 @@ export default function AdminProducts() {
                     </div>
                   </div>
                 ))
+              )}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-4 mt-8">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="p-2 bg-background border border-border hover:bg-muted disabled:opacity-50 transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <span className="text-sm font-bold uppercase tracking-widest">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="p-2 bg-background border border-border hover:bg-muted disabled:opacity-50 transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
               )}
             </motion.div>
           ) : (

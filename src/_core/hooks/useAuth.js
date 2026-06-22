@@ -1,10 +1,12 @@
 import { trpc } from "@/lib/trpc";
 import { UNAUTHED_ERR_MSG } from "@shared/const";
 import { useCallback, useEffect, useMemo } from "react";
+import { useLocation } from "wouter";
 
 export function useAuth(options) {
   const { redirectOnUnauthenticated = false, redirectPath = "/signin" } = options ?? {};
   const utils = trpc.useUtils();
+  const [location, setLocation] = useLocation();
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
     retry: false,
@@ -44,9 +46,9 @@ export function useAuth(options) {
     if (meQuery.isLoading || logoutMutation.isPending) return;
     if (state.user) return;
     if (typeof window === "undefined") return;
-    if (window.location.pathname === redirectPath) return;
-    window.location.href = redirectPath;
-  }, [redirectOnUnauthenticated, redirectPath, logoutMutation.isPending, meQuery.isLoading, state.user]);
+    if (location === redirectPath) return;
+    setLocation(redirectPath);
+  }, [redirectOnUnauthenticated, redirectPath, logoutMutation.isPending, meQuery.isLoading, state.user, location, setLocation]);
 
   return { ...state, refresh: () => meQuery.refetch(), logout };
 }

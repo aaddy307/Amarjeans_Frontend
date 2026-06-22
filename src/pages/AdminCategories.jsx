@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
-import { Shield, Plus, Trash2, ArrowLeft, Image as ImageIcon, Upload, X } from "lucide-react";
+import { Shield, Plus, Trash2, ArrowLeft, Image as ImageIcon, Upload, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Link } from "wouter";
@@ -22,6 +22,12 @@ export default function AdminCategories() {
   const fileInputRef = useRef(null);
   const utils = trpc.useUtils();
   const { data: categories = [], isLoading } = trpc.commerce.categories.list.useQuery();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalPages = Math.ceil(categories.length / itemsPerPage);
+  const paginatedCategories = categories.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const createMutation = trpc.admin.createCategory.useMutation({
     onSuccess: () => {
@@ -152,10 +158,10 @@ export default function AdminCategories() {
                 <div className="col-span-4">Slug</div>
                 <div className="col-span-2 text-right">Actions</div>
               </div>
-              {categories.length === 0 ? (
+              {paginatedCategories.length === 0 ? (
                 <div className="p-16 text-center text-muted-foreground font-bold uppercase tracking-widest">No categories found. Add one above.</div>
               ) : (
-                categories.map(cat => (
+                paginatedCategories.map(cat => (
                   <div key={cat.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border-b border-border items-center hover:bg-muted/10 transition-colors">
                     <div className="md:col-span-2 hidden md:block">
                       <div className="w-16 h-16 bg-muted border border-border overflow-hidden flex items-center justify-center">
@@ -183,6 +189,28 @@ export default function AdminCategories() {
                     </div>
                   </div>
                 ))
+              )}
+
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-4 mt-8 pb-8">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="p-2 bg-background border border-border hover:bg-muted disabled:opacity-50 transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <span className="text-sm font-bold uppercase tracking-widest">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="p-2 bg-background border border-border hover:bg-muted disabled:opacity-50 transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
               )}
             </motion.div>
           ) : (

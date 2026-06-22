@@ -52,7 +52,7 @@ export default function AdminDashboard() {
 
   const stats = [
     { label: "Total Orders", value: dashboard?.totalOrders || 0, icon: ShoppingBag, suffix: "" },
-    { label: "Total Revenue", value: dashboard?.totalRevenue != null ? dashboard.totalRevenue.toFixed(0) : "0", icon: TrendingUp, prefix: "₹" },
+    { label: "Total Revenue", value: dashboard?.totalRevenue != null ? dashboard.totalRevenue.toFixed(0) : "0", icon: TrendingUp, prefix: "₹", suffix: "" },
     { label: "Total Users", value: dashboard?.totalUsers || 0, icon: Users, suffix: "" },
     { label: "Total Products", value: dashboard?.totalProducts || 0, icon: PackagePlus, suffix: "" },
   ];
@@ -60,7 +60,6 @@ export default function AdminDashboard() {
   const controls = [
     { href: "/admin/products", icon: PackagePlus, title: "Manage Products", desc: "Add, edit, or remove products" },
     { href: "/admin/categories", icon: Tags, title: "Manage Categories", desc: "Create and update store categories" },
-    { href: "/admin/reviews", icon: BarChart3, title: "Manage Reviews", desc: "Moderate user product reviews" },
     { href: "/admin/orders", icon: ShoppingBag, title: "Manage Orders", desc: "View and update order statuses" },
     { href: "/admin/users", icon: Users, title: "Manage Users", desc: "Update roles and manage accounts" },
     { href: "/admin/logs", icon: Activity, title: "Admin Logs", desc: "View all admin activities" },

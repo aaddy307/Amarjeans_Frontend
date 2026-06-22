@@ -2,24 +2,41 @@ import { motion } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { BarChart3, Users, ShoppingBag, Activity, Settings, Shield, Tags, PackagePlus, X, LogOut, Menu } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AdminLayout({ children }) {
   const [location, setLocation] = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!loading && (!user || user.role !== "admin")) {
+      if (location !== "/signin") {
+        setLocation("/signin");
+      }
+    }
+  }, [user, loading, location, setLocation]);
 
   const navLinks = [
     { href: "/admin", icon: BarChart3, label: "Dashboard" },
     { href: "/admin/products", icon: PackagePlus, label: "Products" },
     { href: "/admin/categories", icon: Tags, label: "Categories" },
     { href: "/admin/orders", icon: ShoppingBag, label: "Orders" },
-    { href: "/admin/reviews", icon: BarChart3, label: "Reviews" },
     { href: "/admin/logs", icon: Activity, label: "Logs" },
     { href: "/settings", icon: Settings, label: "Settings" },
   ];
 
-  if (!user || user.role !== "admin") return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user || user.role !== "admin") {
+    return null;
+  }
 
   return (
     <div className="flex h-screen bg-muted/10 overflow-hidden font-sans selection:bg-primary selection:text-primary-foreground">

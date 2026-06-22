@@ -25,6 +25,9 @@ export default function ProductDetail() {
   const [isReviewing, setIsReviewing] = useState(false);
   const [reviewForm, setReviewForm] = useState({ authorName: "", rating: 5, comment: "" });
 
+  const [isDirectOrderOpen, setIsDirectOrderOpen] = useState(false);
+  const [orderForm, setOrderForm] = useState({ name: "", phone: "", address: "", pincode: "" });
+
   const inCart = cart?.items?.some(i => i.variantId === product?.variants?.[0]?.id);
 
   const createReviewMutation = trpc.commerce.reviews.create.useMutation({
@@ -80,6 +83,28 @@ export default function ProductDetail() {
     } finally {
       setAdding(false);
     }
+  };
+
+  const handleDirectOrder = (e) => {
+    e.preventDefault();
+    const { name, phone, address, pincode } = orderForm;
+    if (!name || !phone || !address || !pincode) {
+      toast.error("Please fill in all the details.");
+      return;
+    }
+    const message = `*New Direct Order*
+Product: ${product.title} (₹${product.priceRange.min.amount})
+
+*Customer Details:*
+Name: ${name}
+Phone: ${phone}
+Address: ${address}
+Pincode: ${pincode}`;
+
+    const whatsappNumber = "919834557990"; // Updated to actual number
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+    setIsDirectOrderOpen(false);
   };
 
 
@@ -181,6 +206,15 @@ export default function ProductDetail() {
               ) : (
                 <><ShoppingBag className="w-6 h-6" /> Add to Bag</>
               )}
+            </motion.button>
+            
+            {/* Direct Order Button */}
+            <motion.button
+              onClick={() => setIsDirectOrderOpen(true)}
+              className="w-full py-6 mt-4 font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-colors bg-[#25D366] text-white hover:bg-[#128C7E]"
+              whileTap={{ scale: 0.98 }}
+            >
+              Direct Order on WhatsApp
             </motion.button>
             
             <div className="grid grid-cols-3 gap-4 border-t border-border pt-8 mt-8">
@@ -287,6 +321,74 @@ export default function ProductDetail() {
             </div>
         </div>
         
+        {/* Direct Order Modal Overlay */}
+        <AnimatePresence>
+          {isDirectOrderOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-background border border-border w-full max-w-md p-8 shadow-2xl relative"
+              >
+                <button 
+                  onClick={() => setIsDirectOrderOpen(false)}
+                  className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors font-black uppercase"
+                >
+                  Close
+                </button>
+                <h3 className="text-2xl font-black uppercase tracking-tighter text-foreground mb-6">Direct Order</h3>
+                <p className="text-sm font-bold text-muted-foreground mb-6 uppercase tracking-widest">
+                  Fill your details to complete the order via WhatsApp.
+                </p>
+                <form onSubmit={handleDirectOrder} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-widest text-foreground block mb-2">Name</label>
+                    <input 
+                      type="text" value={orderForm.name} onChange={e => setOrderForm({ ...orderForm, name: e.target.value })}
+                      className="w-full bg-background border border-border px-4 py-3 focus:outline-none focus:border-primary font-bold" required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-widest text-foreground block mb-2">Phone Number</label>
+                    <input 
+                      type="tel" value={orderForm.phone} onChange={e => setOrderForm({ ...orderForm, phone: e.target.value })}
+                      className="w-full bg-background border border-border px-4 py-3 focus:outline-none focus:border-primary font-bold" required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-widest text-foreground block mb-2">Delivery Address</label>
+                    <textarea 
+                      value={orderForm.address} onChange={e => setOrderForm({ ...orderForm, address: e.target.value })}
+                      className="w-full bg-background border border-border px-4 py-3 focus:outline-none focus:border-primary font-bold resize-y" rows={3} required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-widest text-foreground block mb-2">Pincode</label>
+                    <input 
+                      type="text" value={orderForm.pincode} onChange={e => setOrderForm({ ...orderForm, pincode: e.target.value })}
+                      className="w-full bg-background border border-border px-4 py-3 focus:outline-none focus:border-primary font-bold" required
+                    />
+                  </div>
+                  <div className="pt-4">
+                    <button 
+                      type="submit"
+                      className="w-full bg-[#25D366] text-white font-black uppercase tracking-widest px-6 py-4 hover:bg-[#128C7E] transition-colors"
+                    >
+                      Continue to WhatsApp
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </div>
     </div>
   );

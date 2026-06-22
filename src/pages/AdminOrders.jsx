@@ -1,9 +1,10 @@
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation, Link } from "wouter";
-import { Shield, Trash2, ArrowLeft } from "lucide-react";
+import { Shield, Trash2, ArrowLeft, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { useState, useMemo } from "react";
 
 export default function AdminOrders() {
   const [, setLocation] = useLocation();
@@ -12,6 +13,11 @@ export default function AdminOrders() {
   const utils = trpc.useUtils();
   const { data: orders = [], isLoading } = trpc.admin.getOrders.useQuery();
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const updateStatusMutation = trpc.admin.updateOrderStatus.useMutation({
     onSuccess: () => {
       toast.success("Order status updated");
@@ -19,6 +25,22 @@ export default function AdminOrders() {
     },
     onError: (err) => toast.error(err.message),
   });
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      const matchesSearch = order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === "all" || order.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [orders, searchTerm, statusFilter]);
+
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const paginatedOrders = filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
 
   if (loading || isLoading) return null;
   if (!user || user.role !== "admin") {
@@ -51,6 +73,34 @@ export default function AdminOrders() {
       </motion.div>
 
       <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search by Order ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-background border border-border text-sm focus:outline-none focus:border-primary transition-colors"
+            />
+          </div>
+          <div className="relative w-full sm:w-48">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-background border border-border text-sm focus:outline-none focus:border-primary transition-colors cursor-pointer appearance-none"
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
         <motion.div 
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           className="bg-background border border-border"
@@ -61,10 +111,10 @@ export default function AdminOrders() {
             <div className="col-span-2">Total</div>
             <div className="col-span-4 text-right">Status / Act</div>
           </div>
-          {orders.length === 0 ? (
+          {paginatedOrders.length === 0 ? (
             <div className="p-16 text-center text-muted-foreground font-bold uppercase tracking-widest">No orders found.</div>
           ) : (
-            orders.map(order => (
+            paginatedOrders.map(order => (
               <div key={order._id} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border-b border-border items-center hover:bg-muted/10 transition-colors">
                 <div className="md:col-span-3 font-black uppercase tracking-tighter text-foreground">{order.orderNumber}</div>
                 <div className="md:col-span-3 text-sm font-bold text-muted-foreground">
@@ -90,6 +140,28 @@ export default function AdminOrders() {
             ))
           )}
         </motion.div>
+
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-2 bg-background border border-border hover:bg-muted disabled:opacity-50 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <span className="text-sm font-bold uppercase tracking-widest">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2 bg-background border border-border hover:bg-muted disabled:opacity-50 transition-colors"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

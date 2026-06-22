@@ -123,24 +123,33 @@ export default function Header() {
         </div>
 
         {/* Bottom Categories Row (Desktop) */}
-        <div className="hidden md:flex border-t border-border bg-background h-12 items-center px-4 lg:px-8 max-w-[1440px] mx-auto overflow-x-auto hide-scrollbar gap-8">
-          {navLinks.map((link) => (
-            <Link key={link.href} href={link.href}>
-              <span className={`text-xs font-bold uppercase tracking-widest cursor-pointer transition-colors whitespace-nowrap ${
-                location === link.href ? "text-primary" : "text-muted-foreground hover:text-foreground"
-              }`}>
-                {link.label}
-              </span>
-            </Link>
-          ))}
-          {categories.length > 0 && <div className="w-px h-4 bg-border mx-2" />}
-          {categories.slice(0, 8).map(cat => (
-            <Link key={cat.id} href={`/products?cat=${cat.slug}`}>
+        <div className="hidden md:flex border-t border-border bg-background h-12 items-center px-4 lg:px-8 max-w-[1440px] mx-auto">
+          <div className="flex items-center gap-8 shrink-0">
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href}>
+                <span className={`text-xs font-bold uppercase tracking-widest cursor-pointer transition-colors whitespace-nowrap ${
+                  location === link.href ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                }`}>
+                  {link.label}
+                </span>
+              </Link>
+            ))}
+            {categories.length > 0 && <div className="w-px h-4 bg-border shrink-0 ml-2 mr-2" />}
+          </div>
+          <div className="flex items-center gap-8 overflow-x-auto hide-scrollbar flex-1 pl-4">
+            <Link href="/products?cat=all">
               <span className="text-xs font-bold uppercase tracking-widest cursor-pointer transition-colors text-foreground hover:text-primary whitespace-nowrap">
-                {cat.name}
+                ALL PRODUCTS
               </span>
             </Link>
-          ))}
+            {categories.map(cat => (
+              <Link key={cat.id} href={`/products?cat=${cat.slug}`}>
+                <span className="text-xs font-bold uppercase tracking-widest cursor-pointer transition-colors text-foreground hover:text-primary whitespace-nowrap">
+                  {cat.name}
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
 
         {/* Mobile Search Bar */}
