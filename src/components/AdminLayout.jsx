@@ -70,7 +70,7 @@ export default function AdminLayout({ children }) {
               <Shield className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-black uppercase tracking-tighter text-foreground text-lg leading-none">AMAR</h2>
+              <img src="/logo.png" alt="AMAR JEANS" className="h-8 object-contain mb-1" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Admin Portal</span>
             </div>
           </div>

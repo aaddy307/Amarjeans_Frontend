@@ -170,7 +170,7 @@ export default function Cart() {
               </div>
               <motion.button
                 onClick={() => setIsCheckoutOpen(true)}
-                className="w-full bg-[#25D366] text-white font-black uppercase tracking-widest py-5 flex items-center justify-center gap-3 hover:bg-[#128C7E] transition-colors text-lg"
+                className="w-full bg-foreground text-background font-black uppercase tracking-widest py-5 flex items-center justify-center gap-3 hover:bg-primary transition-colors text-lg"
                 whileTap={{ scale: 0.98 }}
                 disabled={loading || createOrder.isPending}
               >
@@ -239,7 +239,7 @@ export default function Cart() {
                     <button 
                       type="submit"
                       disabled={createOrder.isPending}
-                      className="w-full bg-[#25D366] text-white font-black uppercase tracking-widest px-6 py-4 hover:bg-[#128C7E] transition-colors disabled:opacity-50"
+                      className="w-full bg-foreground text-background font-black uppercase tracking-widest px-6 py-4 hover:bg-primary transition-colors disabled:opacity-50"
                     >
                       {createOrder.isPending ? "Processing..." : "Continue to WhatsApp"}
                     </button>

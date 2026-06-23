@@ -219,7 +219,7 @@ Pincode: ${pincode}`;
             {/* Direct Order Button */}
             <motion.button
               onClick={() => setIsDirectOrderOpen(true)}
-              className="w-full py-6 mt-4 font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-colors bg-[#25D366] text-white hover:bg-[#128C7E]"
+              className="w-full py-6 mt-4 font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-colors bg-foreground text-background hover:bg-primary"
               whileTap={{ scale: 0.98 }}
             >
               Direct Order on WhatsApp
@@ -388,7 +388,7 @@ Pincode: ${pincode}`;
                   <div className="pt-4">
                     <button 
                       type="submit"
-                      className="w-full bg-[#25D366] text-white font-black uppercase tracking-widest px-6 py-4 hover:bg-[#128C7E] transition-colors"
+                      className="w-full bg-foreground text-background font-black uppercase tracking-widest px-6 py-4 hover:bg-primary transition-colors"
                     >
                       Continue to WhatsApp
                     </button>

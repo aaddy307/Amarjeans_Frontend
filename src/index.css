@@ -41,8 +41,8 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.1 0 0);
 
-  /* Primary Accent: High-Visibility Orange/Red (Myntra/Nike Vibe) */
-  --primary: oklch(0.60 0.22 35);      /* Bright Orange Red #ff3b00 roughly */
+  /* Primary Accent: Classic Bold Red */
+  --primary: oklch(0.55 0.22 25);      /* Elegant Red */
   --primary-foreground: oklch(1 0 0);
 
   /* Secondary: Light Cool Gray */
@@ -91,8 +91,10 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    /* Eliminate rounded corners globally */
-    border-radius: 0 !important;
+    /* Removed !important to allow utility classes like rounded-full to work */
+  }
+  html {
+    font-size: 105%; /* Makes the entire website slightly bigger */
   }
   body {
     @apply bg-background text-foreground;

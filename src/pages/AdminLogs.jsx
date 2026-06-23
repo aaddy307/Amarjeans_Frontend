@@ -1,14 +1,20 @@
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation, Link } from "wouter";
-import { Shield, ArrowLeft } from "lucide-react";
+import { Shield, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 export default function AdminLogs() {
   const [, setLocation] = useLocation();
   const { user, loading } = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/admin/login" });
   
   const { data: logs = [], isLoading } = trpc.admin.getLogs.useQuery();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalPages = Math.max(1, Math.ceil(logs.length / itemsPerPage));
+  const paginatedLogs = logs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   if (loading || isLoading) return null;
   if (!user || user.role !== "admin") {
@@ -51,10 +57,10 @@ export default function AdminLogs() {
             <div className="col-span-2">Entity</div>
             <div className="col-span-4">Details</div>
           </div>
-          {logs.length === 0 ? (
+          {paginatedLogs.length === 0 ? (
             <div className="p-16 text-center text-muted-foreground font-bold uppercase tracking-widest">No logs found.</div>
           ) : (
-            logs.map(log => (
+            paginatedLogs.map(log => (
               <div key={log._id} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border-b border-border items-center hover:bg-muted/10 transition-colors">
                 <div className="md:col-span-3 text-sm font-bold text-muted-foreground">
                   {new Date(log.createdAt).toLocaleString()}
@@ -66,6 +72,29 @@ export default function AdminLogs() {
             ))
           )}
         </motion.div>
+
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-2 bg-background border border-border hover:bg-muted disabled:opacity-50 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <span className="text-sm font-bold uppercase tracking-widest">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2 bg-background border border-border hover:bg-muted disabled:opacity-50 transition-colors"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
       </div>
     </div>
   );

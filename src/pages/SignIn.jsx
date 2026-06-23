@@ -54,7 +54,7 @@ export default function SignIn() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            AMAR <span className="text-primary">JEANS</span>
+            <img src="/logo.png" alt="AMAR JEANS" className="h-16 object-contain mb-4" />
           </motion.h1>
           <motion.p 
             className="text-background/80 font-bold uppercase tracking-widest text-sm leading-relaxed"
@@ -79,9 +79,9 @@ export default function SignIn() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h1 className="lg:hidden text-5xl font-black uppercase tracking-tighter text-foreground mb-8 cursor-pointer" onClick={() => setLocation("/")}>
-              AMAR <span className="text-primary">JEANS</span>
-            </h1>
+            <div className="lg:hidden mb-8 cursor-pointer bg-foreground py-1 px-3 rounded-sm inline-block" onClick={() => setLocation("/")}>
+              <img src="/logo.png" alt="AMAR JEANS" className="h-10 object-contain" />
+            </div>
             
             <div className="flex items-center gap-4 mb-2">
               <div className="w-12 h-12 bg-foreground flex items-center justify-center">

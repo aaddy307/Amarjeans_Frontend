@@ -99,7 +99,7 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
       
       {/* Hero Section (Zara/Nike style full bleed) */}
-      <section className="relative h-[85vh] w-full bg-foreground overflow-hidden">
+      <section className="relative h-[85vh] min-h-[600px] w-full bg-foreground overflow-hidden">
         {/* Full background image */}
         <div className="absolute inset-0">
           <img 

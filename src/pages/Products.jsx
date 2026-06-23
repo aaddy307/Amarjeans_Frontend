@@ -15,13 +15,13 @@ export default function Products() {
   const searchString = useSearch();
   const searchParams = new URLSearchParams(searchString);
   const activeCategoryParam = searchParams.get("cat") || "all";
+  const activeSearchParam = searchParams.get("search") || "";
 
   const { data: products = [], isLoading: isLoadingProducts } = trpc.commerce.products.list.useQuery();
   const { data: categories = [], isLoading: isLoadingCategories } = trpc.commerce.categories.list.useQuery();
   const { addItem } = useCart();
-  
-  const [searchTerm, setSearchTerm] = useState("");
   const activeCategory = activeCategoryParam;
+  const searchTerm = activeSearchParam;
   const [activeRating, setActiveRating] = useState(0);
   const [sortBy, setSortBy] = useState("Recommended");
   const [currentPage, setCurrentPage] = useState(1);
@@ -154,7 +154,7 @@ export default function Products() {
               <h3 className="text-3xl font-black text-foreground mb-2 uppercase tracking-tighter">Nothing Found</h3>
               <p className="text-muted-foreground text-sm font-bold uppercase tracking-widest mb-8">Try adjusting your filters.</p>
               <button 
-                onClick={() => { setSearchTerm(""); setActiveCategory("all"); }}
+                onClick={() => setLocation("/products")}
                 className="bg-foreground text-background px-8 py-3 font-black uppercase tracking-widest hover:bg-primary transition-colors"
               >
                 Clear all filters

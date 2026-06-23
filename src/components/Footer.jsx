@@ -11,9 +11,9 @@ export default function Footer() {
         {/* Brand */}
         <div className="col-span-1 md:col-span-2">
           <Link href="/">
-            <h2 className="text-3xl font-black uppercase tracking-tighter mb-6 cursor-pointer hover:text-primary transition-colors inline-block">
-              AMAR <span className="text-primary">JEANS</span>
-            </h2>
+            <div className="mb-6 cursor-pointer hover:opacity-80 transition-opacity inline-block">
+              <img src="/logo.png" alt="AMAR JEANS" className="h-10 object-contain" />
+            </div>
           </Link>
           <div className="mb-8 space-y-2">
             <p className="text-background/80 font-bold uppercase tracking-widest text-xs leading-relaxed max-w-sm">
