@@ -4,11 +4,42 @@ import { ShoppingBag, Plus, Minus, Trash2, ArrowRight, ChevronLeft } from "lucid
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export default function Cart() {
   const { cart, loading, updateQuantity, removeItem, clearCart } = useCart();
   const createOrder = trpc.commerce.orders.create.useMutation();
   const items = cart?.items ?? [];
+
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [orderForm, setOrderForm] = useState({ name: "", phone: "", address: "", pincode: "" });
+
+  const handleCheckoutSubmit = async (e) => {
+    e.preventDefault();
+    const { name, phone, address, pincode } = orderForm;
+    if (!name || !phone || !address || !pincode) {
+      toast.error("Please fill in all the details.");
+      return;
+    }
+    try {
+      await createOrder.mutateAsync({
+        cartItems: items,
+        totalPrice: cart?.total?.amount || "0"
+      });
+      const phoneNumber = "919834557990";
+      let text = `*New Order*\n\n*Customer Details:*\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\nPincode: ${pincode}\n\n*Items:*\n`;
+      items.forEach(item => {
+        text += `- ${item.productTitle} (Qty: ${item.quantity}) - ₹${item.lineTotal.amount}\n`;
+      });
+      text += `\n*Total: ₹${cart?.total?.amount}*`;
+      window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(text)}`, "_blank");
+      clearCart();
+      setIsCheckoutOpen(false);
+      toast.success("Order confirmed!");
+    } catch (err) {
+      toast.error("Failed to create order");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background py-12 px-4 selection:bg-primary selection:text-primary-foreground">
@@ -138,25 +169,7 @@ export default function Cart() {
                 </div>
               </div>
               <motion.button
-                onClick={async () => {
-                  try {
-                    await createOrder.mutateAsync({
-                      cartItems: items,
-                      totalPrice: cart?.total?.amount || "0"
-                    });
-                    const phoneNumber = "919834557990";
-                    let text = "Hello AMAR JEANS, I'd like to place an order:\n\n";
-                    items.forEach(item => {
-                      text += `- ${item.productTitle} (Qty: ${item.quantity}) - ₹${item.lineTotal.amount}\n`;
-                    });
-                    text += `\nTotal: ₹${cart?.total?.amount}\n\nPlease let me know the payment details!`;
-                    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(text)}`, "_blank");
-                    clearCart();
-                    toast.success("Order confirmed!");
-                  } catch (err) {
-                    toast.error("Failed to create order");
-                  }
-                }}
+                onClick={() => setIsCheckoutOpen(true)}
                 className="w-full bg-[#25D366] text-white font-black uppercase tracking-widest py-5 flex items-center justify-center gap-3 hover:bg-[#128C7E] transition-colors text-lg"
                 whileTap={{ scale: 0.98 }}
                 disabled={loading || createOrder.isPending}
@@ -167,6 +180,76 @@ export default function Cart() {
             </motion.div>
           </div>
         )}
+
+        {/* Checkout Details Modal Overlay */}
+        <AnimatePresence>
+          {isCheckoutOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-background border border-border w-full max-w-md p-8 shadow-2xl relative"
+              >
+                <button 
+                  onClick={() => setIsCheckoutOpen(false)}
+                  className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors font-black uppercase"
+                >
+                  Close
+                </button>
+                <h3 className="text-2xl font-black uppercase tracking-tighter text-foreground mb-6">Complete Order</h3>
+                <p className="text-sm font-bold text-muted-foreground mb-6 uppercase tracking-widest">
+                  Fill your details to complete the order via WhatsApp.
+                </p>
+                <form onSubmit={handleCheckoutSubmit} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-widest text-foreground block mb-2">Name</label>
+                    <input 
+                      type="text" value={orderForm.name} onChange={e => setOrderForm({ ...orderForm, name: e.target.value })}
+                      className="w-full bg-background border border-border px-4 py-3 focus:outline-none focus:border-primary font-bold" required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-widest text-foreground block mb-2">Phone Number</label>
+                    <input 
+                      type="tel" value={orderForm.phone} onChange={e => setOrderForm({ ...orderForm, phone: e.target.value })}
+                      className="w-full bg-background border border-border px-4 py-3 focus:outline-none focus:border-primary font-bold" required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-widest text-foreground block mb-2">Delivery Address</label>
+                    <textarea 
+                      value={orderForm.address} onChange={e => setOrderForm({ ...orderForm, address: e.target.value })}
+                      className="w-full bg-background border border-border px-4 py-3 focus:outline-none focus:border-primary font-bold resize-y" rows={3} required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-widest text-foreground block mb-2">Pincode</label>
+                    <input 
+                      type="text" value={orderForm.pincode} onChange={e => setOrderForm({ ...orderForm, pincode: e.target.value })}
+                      className="w-full bg-background border border-border px-4 py-3 focus:outline-none focus:border-primary font-bold" required
+                    />
+                  </div>
+                  <div className="pt-4">
+                    <button 
+                      type="submit"
+                      disabled={createOrder.isPending}
+                      className="w-full bg-[#25D366] text-white font-black uppercase tracking-widest px-6 py-4 hover:bg-[#128C7E] transition-colors disabled:opacity-50"
+                    >
+                      {createOrder.isPending ? "Processing..." : "Continue to WhatsApp"}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </div>
     </div>
   );
