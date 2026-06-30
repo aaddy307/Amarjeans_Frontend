@@ -18,7 +18,8 @@ export default function AdminSettings() {
     supportEmail: "",
     supportPhone: "",
     storeAddress: "",
-    instagramUrl: ""
+    instagramUrl: "",
+    whatsappNumber: ""
   });
 
   useEffect(() => {
@@ -28,7 +29,8 @@ export default function AdminSettings() {
         supportEmail: settings.supportEmail || "",
         supportPhone: settings.supportPhone || "",
         storeAddress: settings.storeAddress || "",
-        instagramUrl: settings.instagramUrl || ""
+        instagramUrl: settings.instagramUrl || "",
+        whatsappNumber: settings.whatsappNumber || ""
       });
     }
   }, [settings]);
@@ -132,6 +134,16 @@ export default function AdminSettings() {
                 value={formData.instagramUrl}
                 onChange={e => setFormData({ ...formData, instagramUrl: e.target.value })}
                 className="w-full bg-background border border-border px-4 py-3 focus:outline-none focus:border-primary font-bold"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-black uppercase tracking-widest text-foreground block mb-2">WhatsApp Number (e.g. 919834557990)</label>
+              <input
+                type="text"
+                value={formData.whatsappNumber}
+                onChange={e => setFormData({ ...formData, whatsappNumber: e.target.value })}
+                className="w-full bg-background border border-border px-4 py-3 focus:outline-none focus:border-primary font-bold"
+                required
               />
             </div>
             

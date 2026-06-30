@@ -11,11 +11,31 @@ export default function Contact() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
+
+    const name = e.target.elements.name.value;
+    const email = e.target.elements.email.value;
+    const subject = e.target.elements.subject.value;
+    const message = e.target.elements.message.value;
+
+    const whatsappMessage = `*New Inquiry from Contact Form*
+
+*Full Name:* ${name}
+*Email:* ${email}
+*Subject:* ${subject}
+
+*Message:*
+${message}`;
+
+    const supportPhoneRaw = settings?.whatsappNumber || settings?.supportPhone?.split('/')?.[0] || "+91 9834557990";
+    const cleanPhone = supportPhoneRaw.replace(/[^\d+]/g, "").replace(/^\+/, "");
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
+
     setTimeout(() => {
       setLoading(false);
-      toast.success("Message sent successfully! We will get back to you soon.");
+      toast.success("Redirecting to WhatsApp...");
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
       e.target.reset();
-    }, 1500);
+    }, 1000);
   };
 
   return (

@@ -150,7 +150,7 @@ export default function Home() {
           { title: "7-Day Returns", sub: "No questions asked", icon: <RefreshCw className="w-8 h-8" /> },
           { title: "Secure Payment", sub: "100% safe checkout", icon: <Lock className="w-8 h-8" /> },
         ].map((promo, i) => (
-          <div key={i} className="flex items-center gap-4 p-8 border-b md:border-b-0 md:border-r border-border last:border-0 bg-muted/20">
+          <div key={i} className="flex items-center justify-center gap-4 p-8 border-b md:border-b-0 md:border-r border-border last:border-0 bg-muted/20">
             <span className="text-primary flex items-center justify-center">{promo.icon}</span>
             <div>
               <h4 className="font-black uppercase tracking-wider text-foreground">{promo.title}</h4>

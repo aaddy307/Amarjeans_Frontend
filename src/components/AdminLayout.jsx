@@ -64,20 +64,20 @@ export default function AdminLayout({ children }) {
       <motion.aside 
         className={`fixed lg:static top-16 left-0 bottom-0 z-40 w-64 bg-background border-r border-border flex flex-col transition-transform duration-300 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
-        <div className="hidden lg:flex p-6 border-b border-border items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
-              <Shield className="w-5 h-5" />
-            </div>
-            <div>
-              <img src="/image.png" alt="AMAR JEANS" className="h-11 object-contain mb-1" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Admin Portal</span>
-            </div>
+        <div className="hidden lg:flex flex-col p-6 border-b border-border gap-4">
+          <div className="flex items-center justify-between w-full">
+            <Link href="/" className="flex items-center">
+              <img src="/image.png" alt="AMAR JEANS" className="h-9 object-contain" />
+            </Link>
+            {/* Back to Site Cross */}
+            <button onClick={() => setLocation("/")} className="text-muted-foreground hover:text-destructive transition-colors p-1" title="Back to Store">
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          {/* Back to Site Cross */}
-          <button onClick={() => setLocation("/")} className="text-muted-foreground hover:text-destructive transition-colors p-1" title="Back to Store">
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-none self-start text-[9px] font-black uppercase tracking-widest">
+            <Shield className="w-3.5 h-3.5" />
+            Admin Portal
+          </div>
         </div>
 
         <div className="p-4 border-b border-border bg-muted/20">

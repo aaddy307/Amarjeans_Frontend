@@ -13,12 +13,13 @@ export default function ProductDetail() {
   const { user } = useAuth();
   
   const { data: product, isLoading } = trpc.commerce.products.byHandle.useQuery({ handle });
+  const { data: settings } = trpc.commerce.settings.get.useQuery();
   const { data: reviews = [] } = trpc.commerce.reviews.listByProduct.useQuery(
     { productId: product?.id },
     { enabled: !!product?.id }
   );
   
-  const { addItem, cart } = useCart();
+  const { addItem, removeItem, cart } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
@@ -28,7 +29,8 @@ export default function ProductDetail() {
   const [isDirectOrderOpen, setIsDirectOrderOpen] = useState(false);
   const [orderForm, setOrderForm] = useState({ name: "", phone: "", address: "", pincode: "" });
 
-  const inCart = cart?.items?.some(i => i.variantId === product?.variants?.[0]?.id);
+  const cartItem = cart?.items?.find(i => i.variantId === product?.variants?.[0]?.id);
+  const inCart = !!cartItem;
 
   const createReviewMutation = trpc.commerce.reviews.create.useMutation({
     onSuccess: () => {
@@ -85,6 +87,19 @@ export default function ProductDetail() {
     }
   };
 
+  const handleRemove = async () => {
+    if (!cartItem) return;
+    setAdding(true);
+    try {
+      await removeItem(cartItem.lineId);
+      toast.success("Removed from Bag");
+    } catch (err) {
+      toast.error("Failed to remove item");
+    } finally {
+      setAdding(false);
+    }
+  };
+
   const handleDirectOrder = (e) => {
     e.preventDefault();
     const { name, phone, address, pincode } = orderForm;
@@ -101,7 +116,8 @@ Phone: ${phone}
 Address: ${address}
 Pincode: ${pincode}`;
 
-    const whatsappNumber = "919834557990"; // Updated to actual number
+    const supportPhoneRaw = settings?.whatsappNumber || settings?.supportPhone?.split('/')?.[0] || "919834557990";
+    const whatsappNumber = supportPhoneRaw.replace(/[^\d+]/g, "").replace(/^\+/, "");
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
     setIsDirectOrderOpen(false);
@@ -196,25 +212,34 @@ Pincode: ${pincode}`;
               {product.description || "No description provided."}
             </p>
 
-            {/* Add to Cart */}
-            <motion.button
-              onClick={handleAdd}
-              disabled={adding}
-              className={`w-full py-6 mt-auto font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-colors ${
-                added
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-foreground text-background hover:bg-primary"
-              }`}
-              whileTap={{ scale: 0.98 }}
-            >
-              {adding ? (
-                <motion.div className="w-6 h-6 border-2 border-background border-t-transparent rounded-full" animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }} />
-              ) : added ? (
-                "Added to Bag"
-              ) : (
-                <><ShoppingBag className="w-6 h-6" /> Add to Bag</>
-              )}
-            </motion.button>
+            {/* Add / Remove from Cart */}
+            {cartItem ? (
+              <motion.button
+                onClick={handleRemove}
+                disabled={adding}
+                className="w-full py-6 mt-auto font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-colors bg-primary text-primary-foreground hover:bg-primary/90"
+                whileTap={{ scale: 0.98 }}
+              >
+                {adding ? (
+                  <motion.div className="w-6 h-6 border-2 border-background border-t-transparent rounded-full" animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }} />
+                ) : (
+                  <><ShoppingBag className="w-6 h-6" /> Remove from Bag</>
+                )}
+              </motion.button>
+            ) : (
+              <motion.button
+                onClick={handleAdd}
+                disabled={adding}
+                className="w-full py-6 mt-auto font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-colors bg-foreground text-background hover:bg-primary"
+                whileTap={{ scale: 0.98 }}
+              >
+                {adding ? (
+                  <motion.div className="w-6 h-6 border-2 border-background border-t-transparent rounded-full" animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }} />
+                ) : (
+                  <><ShoppingBag className="w-6 h-6" /> Add to Bag</>
+                )}
+              </motion.button>
+            )}
             
             {/* Direct Order Button */}
             <motion.button

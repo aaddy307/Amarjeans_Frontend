@@ -20,6 +20,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showMegaMenu, setShowMegaMenu] = useState(false);
   const [location, setLocation] = useLocation();
 
   const isAuthPage = ["/admin/login", "/register", "/forgot-password"].includes(location);
@@ -176,34 +177,69 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Bottom Categories Row (Desktop) */}
-        <div className="hidden md:flex border-t border-border bg-background h-10 items-center px-4 lg:px-8 max-w-[1440px] mx-auto">
-          <div className="flex items-center gap-10 shrink-0">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}>
-                <span className={`text-xs font-bold uppercase tracking-widest cursor-pointer transition-colors whitespace-nowrap ${
-                  location === link.href ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                }`}>
-                  {link.label}
+        {/* Bottom Categories Row (Desktop) with Mega Menu hover trigger */}
+        <div 
+          className="relative hidden md:block border-t border-border bg-background"
+          onMouseLeave={() => setShowMegaMenu(false)}
+        >
+          <div className="flex h-10 items-center justify-center px-4 lg:px-8 max-w-[1440px] mx-auto">
+            <div className="flex items-center gap-10 shrink-0">
+              {navLinks.map((link) => (
+                <Link key={link.href} href={link.href}>
+                  <span className={`text-xs font-bold uppercase tracking-widest cursor-pointer transition-colors whitespace-nowrap ${
+                    location === link.href ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  }`}>
+                    {link.label}
+                  </span>
+                </Link>
+              ))}
+              {categories.length > 0 && <div className="w-px h-4 bg-border shrink-0 ml-2 mr-2" />}
+            </div>
+            
+            <div className="flex items-center pl-4 h-full">
+              <Link href="/products?cat=all">
+                <span 
+                  onMouseEnter={() => setShowMegaMenu(true)}
+                  className="text-xs font-bold uppercase tracking-widest cursor-pointer transition-colors text-foreground hover:text-primary whitespace-nowrap flex items-center h-full"
+                >
+                  ALL PRODUCTS
                 </span>
               </Link>
-            ))}
-            {categories.length > 0 && <div className="w-px h-4 bg-border shrink-0 ml-2 mr-2" />}
+            </div>
           </div>
-          <div className="flex items-center gap-10 overflow-x-auto hide-scrollbar flex-1 pl-4">
-            <Link href="/products?cat=all">
-              <span className="text-xs font-bold uppercase tracking-widest cursor-pointer transition-colors text-foreground hover:text-primary whitespace-nowrap">
-                ALL PRODUCTS
-              </span>
-            </Link>
-            {categories.map(cat => (
-              <Link key={cat.id} href={`/products?cat=${cat.slug}`}>
-                <span className="text-xs font-bold uppercase tracking-widest cursor-pointer transition-colors text-foreground hover:text-primary whitespace-nowrap">
-                  {cat.name}
-                </span>
-              </Link>
-            ))}
-          </div>
+
+          {/* Mega Menu Dropdown */}
+          <AnimatePresence>
+            {showMegaMenu && categories.length > 0 && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} // smooth easeOutExpo curve
+                className="absolute left-0 right-0 top-full bg-background/95 backdrop-blur-md border-b border-border shadow-xl z-40 overflow-hidden border-t border-border"
+              >
+                <div className="max-w-[1440px] mx-auto py-8 px-8">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-6">Explore Our Collections</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    {categories.map((cat) => (
+                      <Link key={cat.id} href={`/products?cat=${cat.slug}`}>
+                        <motion.div 
+                          onClick={() => setShowMegaMenu(false)}
+                          className="group cursor-pointer border-2 border-border bg-card px-5 py-4 text-center transition-all duration-300 hover:border-foreground hover:bg-foreground"
+                          whileHover={{ y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <span className="text-xs font-black uppercase tracking-widest text-foreground group-hover:text-background transition-colors duration-300">
+                            {cat.name}
+                          </span>
+                        </motion.div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Mobile Search Bar */}

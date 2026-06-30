@@ -1,7 +1,10 @@
 import { motion } from "framer-motion";
+import { trpc } from "@/lib/trpc";
 
 export default function WhatsAppButton() {
-  const phoneNumber = "919834557990"; // Using the primary contact
+  const { data: settings } = trpc.commerce.settings.get.useQuery();
+  const supportPhoneRaw = settings?.whatsappNumber || settings?.supportPhone?.split('/')?.[0] || "919834557990";
+  const phoneNumber = supportPhoneRaw.replace(/[^\d+]/g, "").replace(/^\+/, "");
   const message = encodeURIComponent("Hello AMAR JEANS! I would like to know more about your products.");
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
 

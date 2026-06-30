@@ -9,6 +9,7 @@ import { useState } from "react";
 export default function Cart() {
   const { cart, loading, updateQuantity, removeItem, clearCart } = useCart();
   const createOrder = trpc.commerce.orders.create.useMutation();
+  const { data: settings } = trpc.commerce.settings.get.useQuery();
   const items = cart?.items ?? [];
 
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -26,7 +27,8 @@ export default function Cart() {
         cartItems: items,
         totalPrice: cart?.total?.amount || "0"
       });
-      const phoneNumber = "919834557990";
+      const supportPhoneRaw = settings?.whatsappNumber || settings?.supportPhone?.split('/')?.[0] || "919834557990";
+      const phoneNumber = supportPhoneRaw.replace(/[^\d+]/g, "").replace(/^\+/, "");
       let text = `*New Order*\n\n*Customer Details:*\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\nPincode: ${pincode}\n\n*Items:*\n`;
       items.forEach(item => {
         text += `- ${item.productTitle} (Qty: ${item.quantity}) - ₹${item.lineTotal.amount}\n`;
