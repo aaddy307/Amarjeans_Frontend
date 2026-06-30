@@ -56,7 +56,6 @@ export default function Footer() {
             <li><Link href="/about"><span className="text-xs font-bold uppercase tracking-widest text-background/80 hover:text-primary transition-colors cursor-pointer">About Us</span></Link></li>
             <li><Link href="/contact"><span className="text-xs font-bold uppercase tracking-widest text-background/80 hover:text-primary transition-colors cursor-pointer">Returns & Exchanges</span></Link></li>
             <li><Link href="/contact"><span className="text-xs font-bold uppercase tracking-widest text-background/80 hover:text-primary transition-colors cursor-pointer">Shipping Policy</span></Link></li>
-            <li className="pt-4 mt-4 border-t border-background/20"><Link href="/admin/login"><span className="text-xs font-bold uppercase tracking-widest text-primary hover:text-background transition-colors cursor-pointer">Admin Login</span></Link></li>
           </ul>
         </div>
       </div>
