@@ -12,7 +12,7 @@ export default function Footer() {
         <div className="col-span-1 md:col-span-2">
           <Link href="/">
             <div className="mb-6 cursor-pointer hover:opacity-80 transition-opacity inline-block">
-              <img src="/logo.png" alt="AMAR JEANS" className="h-10 object-contain" />
+              <img src="/image.png" alt="AMAR JEANS" className="h-10 object-contain" />
             </div>
           </Link>
           <div className="mb-8 space-y-2">
