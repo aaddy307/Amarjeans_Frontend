@@ -12,7 +12,7 @@ export default defineConfig({
     extensions: [".jsx", ".js", ".tsx", ".ts", ".json"],
     alias: {
       "@": path.resolve(__dirname, "src"),
-      "@shared": path.resolve(__dirname, "../server/shared"),
+      "@shared": path.resolve(__dirname, "../Amarjeans_Backend/shared"),
       "@assets": path.resolve(__dirname, "attached_assets"),
     },
   },
